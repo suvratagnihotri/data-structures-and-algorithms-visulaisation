@@ -40,6 +40,24 @@ main{
     text-align: center;
 }
 
+.algorithm-button{
+    width: 150px;
+    height: 25px;
+    background-color: white;
+    color: black;
+    border-style: solid;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: 1s;
+}
+
+.algorithm-button:hover{
+    cursor: pointer;
+    outline: none;
+    transform: scale(1.1);
+    border-color: chocolate;
+}
+
 #grid-container {
 	position: relative;
     outline:2px solid #000;
@@ -59,6 +77,28 @@ main{
 	padding:0;
 	outline:1px solid #000;
 	display:inline-block;
+    cursor: pointer;
+    transition: 100ms;
+}
+
+.wall-cell{
+    margin:0;
+	padding:0;
+	outline:1px solid #000;
+    cursor: pointer;
+	display:inline-block;
+    background-color: black;
+}
+
+.cell:hover{
+    transform: scale(1.025);
+    outline: none;
+}
+
+canvas{
+    border-style: solid;
+    border-color: black;
+    border-width: 3px;
 }
 
 footer{
