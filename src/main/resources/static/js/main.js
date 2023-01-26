@@ -1,10 +1,13 @@
 class GridNode{
-    constructor(id,isWall,isStart,isFinish,isVisited){
+    constructor(id,isWall,isStart,isFinish,isVisited,row,column,distance){
         this.id = id;
         this.isWall= isWall;
         this.isStart  = isStart;
         this.isFinish = isFinish;
         this.isVisited = isVisited;
+        this.row = row;
+        this.column = column;
+        this.distance = distance;
     }
 }
 
@@ -12,6 +15,8 @@ class Algorithms{
     constructor(){
         this.algorithmUser;
         this.selectedAlgorithm = "dijkstra";
+        this.startNode;
+        this.finishNode;
         this.gridElement;
         this.graphElement;
         this.isGridVisible = false;
@@ -19,6 +24,7 @@ class Algorithms{
         this.mouseDown = false;
         this.unsortedPoles = [];
         this.gridNodes;
+        this.grid;
         this.clickCount = 0;
     }
 
@@ -36,6 +42,22 @@ class Algorithms{
 
     getAlgorithm(){
         return this.selectedAlgorithm;
+    }
+
+    setStartNode(startNode){
+        this.startNode = startNode;
+    }
+
+    getStartNode(){
+        return this.startNode;
+    }
+
+    setFinishNode(finishNode){
+        this.finishNode = finishNode;
+    }
+
+    getFinishNode(){
+        return this.finishNode;
     }
 
     setGridElement(gridElement){
@@ -112,8 +134,19 @@ class Algorithms{
         this.clickCount = count;
     }
 
+    setGrid(grid){
+        this.grid = grid;
+    }
+    getGrid(){
+        return this.grid;
+    }
+
     getClickCount(){
         return this.clickCount;
+    }
+
+    getRowAndColumn(cellId){
+        return cellId.split("-");
     }
 
 }
@@ -171,8 +204,10 @@ function createGrid(){
         algorithm.setMouseDown(false);
         console.log(algorithm.getMouseDown());
     });
-    gridNodes = {};
+    var gridNodes = {};
+    var grid = [];
     for(var i=0; i<40; i++){
+        var currentRow = [];
         for(var j=0; j<40; j++){
             let cell = document.createElement("div");
             cell.className = "cell";
@@ -180,12 +215,15 @@ function createGrid(){
             cell.onclick = cellClicked;
             cell.onmouseover = cellVisited;
             element.append(cell);
-            gridNodes[cell.id]=new GridNode(cell.id,false,false,false,false);
+            gridNodes[cell.id]=new GridNode(cell.id,false,false,false,false,i,j,2147483647);
+            currentRow.push(gridNodes[cell.id]);
         }
+        grid.push(currentRow);
     }
+    algorithm.setGrid(grid);
     algorithm.setGridNodes(gridNodes);
-    $(".cell").width("1.9vw");
-    $(".cell").height("2.5vh");
+    $(".cell").width(700/40);
+    $(".cell").height(660/40);
     algorithm.setGridElement(element);
     algorithm.setGridVisible(true);
     console.log(algorithm.getGridNodes());
@@ -193,24 +231,29 @@ function createGrid(){
 
 function cellVisited(event){
     let cellId = event.target.id;
-    console.log(cellId);
+    const row = parseInt(algorithm.getRowAndColumn(cellId)[0]);
+    const column = parseInt(algorithm.getRowAndColumn(cellId)[1]);
     if(algorithm.getMouseDown()){
-        document.getElementById(cellId).className = "wall-cell";
-        algorithm.getGridNodes()[cellId] = new GridNode(cellId,true,false,false,false);
+        document.getElementById(cellId).className = "cell wall-cell";
+        algorithm.getGrid()[row][column] = new GridNode(cellId,true,false,false,false,row,column,2147483647);     
     }
 }
 
 function cellClicked(event){
     let cellId = event.target.id;
+    const row = parseInt(algorithm.getRowAndColumn(cellId)[0]);
+    const column = parseInt(algorithm.getRowAndColumn(cellId)[1]);
     console.log(cellId);
     if(algorithm.getClickCount()===0){
         document.getElementById(cellId).style.backgroundColor = "orange";
-        algorithm.getGridNodes()[cellId] = new GridNode(cellId,false,true,false,false);
+        algorithm.getGrid()[row][column] = new GridNode(cellId,false,true,false,false,row,column,0);
+        algorithm.setStartNode(new GridNode(cellId,false,true,false,false,row,column,0));
         algorithm.setClickCount(algorithm.getClickCount()+1);
     }
     else if (algorithm.getClickCount()===1){
         document.getElementById(cellId).style.backgroundColor = "green";
-        algorithm.getGridNodes()[cellId] = new GridNode(cellId,false,false,true,false);
+        algorithm.getGrid()[row][column] = new GridNode(cellId,false,false,true,false,row,column,2147483647);
+        algorithm.setFinishNode(new GridNode(cellId,false,false,true,false,row,column,2147483647));
         algorithm.setClickCount(algorithm.getClickCount()+1);
     }
 }
@@ -251,7 +294,7 @@ function connectToSocket(event){
 }
 
 function onConnected() {
-    stompClient.subscribe('/start/initial.'+algorithm.getAlgorithmUser(), onMessageReceived);
+    stompClient.subscribe('/start/path.'+algorithm.getAlgorithmUser(), onMessageReceived);
   
   
     stompClient.send("/current/adduser."+algorithm.getAlgorithmUser(),
@@ -271,13 +314,14 @@ function onConnected() {
   function sendDataToSocket(event) {
 
     let messageContent = {  
-                            "grid":algorithm.getGridNodes()
+                            "start-node":algorithm.getStartNode(),
+                            "finish-node":algorithm.getFinishNode(),
+                            "grid":algorithm.getGrid()
                         }
   
     if(messageContent && stompClient) {
         var chatMessage = {
             sender: algorithm.getAlgorithmUser(),
-            chat: JSON.stringify(messageContent),
             content: JSON.stringify(messageContent),
             type: 'CHAT'
         };
@@ -292,5 +336,23 @@ function onErrorFromSocket(){
 }
 
 function onMessageReceived(payload){
-    console.log(payload);
+    var data=payload["body"];
+    if(data.includes("visited-nodes-order")){
+        console.log(typeof(data));
+        var jsonData = JSON.parse(data);
+        console.log(jsonData["visited-nodes-order"]);
+        // console.log(jsonData["shortespath"]);
+        var shortestPath = jsonData["shortespath"];
+        shortestPath.forEach(element => {
+            console.log(element);
+            if(document.getElementById(element["id"])){
+                console.log("yes");
+                // document.getElementById(element["id"]).className = "cell cell-visited";
+
+                setTimeout(() => {
+                    document.getElementById(element["id"]).className = "cell-visited";
+                  }, 10 * 5);
+            }
+        });
+    }
 }
