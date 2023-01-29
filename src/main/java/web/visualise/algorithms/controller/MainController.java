@@ -1,6 +1,7 @@
 package web.visualise.algorithms.controller;
 
 
+import java.io.Console;
 import java.util.HashMap;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import web.visualise.algorithms.entity.GridNode;
 import web.visualise.algorithms.services.ShortestPathService;
+import web.visualise.algorithms.services.SortingService;
 
 @Controller
 public class MainController {
@@ -25,6 +27,9 @@ public class MainController {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private ShortestPathService shortestPathService;
+
+    @Autowired 
+    private SortingService sortingService;
 
     @MessageMapping("/shortestPath.{username}")
     @SendTo("/start/initial.{username}")
@@ -39,7 +44,10 @@ public class MainController {
     public void sorting(String msg, @DestinationVariable String username, SimpMessageHeaderAccessor headerAccessor) {
         // System.out.println(msg);
         // shortestPathService.runAlgorithm(msg);
-        messagingTemplate.convertAndSend("/start/initial."+username,msg);
+
+        System.out.println(msg);
+        int sortedArray [][] = sortingService.runSortingAlgorithm(msg);
+        messagingTemplate.convertAndSend("/start/sorting."+username,sortedArray);
     }
 
     @MessageMapping("/adduser.{username}") 

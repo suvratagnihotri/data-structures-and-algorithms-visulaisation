@@ -174,10 +174,10 @@ function setSelectedAlgorithm(event){
 
 function runAlgorithm(){
     if(algorithm.getAlgorithm()==="dijkstra"){
-        sendDataToSocket();
+        sendDataToDijkstraAlgorithm();
     }
     else{
-
+        sendDataTOSortingAlgorith(algorithm.getAlgorithm());
     }
 }
 
@@ -275,8 +275,9 @@ function createGraph(){
         ctx.lineWidth = "2";
         ctx.textAlign="center"; 
         ctx.strokeStyle = "red";
-        ctx.rect(x, 5, 10, randomHeight);
-        unsortedPoles.push(randomHeight);
+        ctx.strokeRect(x, 5, 10, randomHeight);
+        // ctx.rect(x, 5, 10, randomHeight);
+        unsortedPoles.push(Number(randomHeight));
         ctx.stroke();
         x = x+10;
     }
@@ -295,6 +296,8 @@ function connectToSocket(event){
 
 function onConnected() {
     stompClient.subscribe('/start/path.'+algorithm.getAlgorithmUser(), onMessageReceived);
+    stompClient.subscribe('/start/sorting.'+algorithm.getAlgorithmUser(), onSortingResultReceived);
+
   
   
     stompClient.send("/current/adduser."+algorithm.getAlgorithmUser(),
@@ -311,7 +314,7 @@ function onConnected() {
   
   }
 
-  function sendDataToSocket(event) {
+  function sendDataToDijkstraAlgorithm(event) {
 
     let messageContent = {  
                             "start-node":algorithm.getStartNode(),
@@ -328,6 +331,25 @@ function onConnected() {
   
         stompClient.send("/current/shortestPath."+algorithm.getAlgorithmUser(), {priority:9}, JSON.stringify(chatMessage));
         messageContent= '';
+    }
+  }
+
+  function sendDataTOSortingAlgorith(algo){
+    console.log(algo);
+    let messageContent = {  
+        "sorting-algorithm":algorithm.getAlgorithm(),
+        "poles-heights":algorithm.getUnsortedPoles()
+    }
+
+    if(messageContent && stompClient) {
+        var chatMessage = {
+            sender: algorithm.getAlgorithmUser(),
+            content: JSON.stringify(messageContent),
+            type: 'CHAT'
+        };
+
+    stompClient.send("/current/sorting."+algorithm.getAlgorithmUser(), {priority:9}, JSON.stringify(chatMessage));
+    messageContent= '';
     }
   }
 
@@ -355,4 +377,40 @@ function onMessageReceived(payload){
             }
         });
     }
+}
+
+function onSortingResultReceived(payload){
+    console.log(payload);
+    var sortedArrayData = payload["body"];
+    console.log(sortedArrayData);
+    var data = JSON.parse(sortedArrayData);
+    setTimeout(() => {
+        data.forEach(array =>{
+            console.log(array);
+            var oldCanvas = algorithm.getGraphElement();
+            oldCanvas.style.display = "none";
+            var c = document.createElement("canvas");
+            c.style.width = "100%";
+            c.style.height = "84vh";
+            c.className = "my-canvas";
+            document.getElementById("main-content").append(c);
+            algorithm.setGraphElement(c);
+            algorithm.setGraphVisible(true);
+            var x = 5;
+            array.forEach(height =>{
+                var ctx = c.getContext("2d");
+                ctx.beginPath();
+                ctx.lineWidth = "2";
+                ctx.textAlign="center"; 
+                ctx.strokeStyle = "red";
+                ctx.strokeRect(x, 5, 10, height);
+                // ctx.rect(x, 5, 10, randomHeight);
+                ctx.stroke();
+                x = x+10;
+            })
+        });
+    },1000);
+    // var ctx = canvasElement.getContext("2d");
+    // ctx.clearRect(0,0,canvasElement.style.width,canvasElement.style.height);
+    // ctx.beginPath();
 }
