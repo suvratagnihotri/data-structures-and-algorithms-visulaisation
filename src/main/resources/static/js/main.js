@@ -384,33 +384,37 @@ function onSortingResultReceived(payload){
     var sortedArrayData = payload["body"];
     console.log(sortedArrayData);
     var data = JSON.parse(sortedArrayData);
-    setTimeout(() => {
-        data.forEach(array =>{
-            console.log(array);
-            var oldCanvas = algorithm.getGraphElement();
-            oldCanvas.style.display = "none";
-            var c = document.createElement("canvas");
-            c.style.width = "100%";
-            c.style.height = "84vh";
-            c.className = "my-canvas";
-            document.getElementById("main-content").append(c);
-            algorithm.setGraphElement(c);
-            algorithm.setGraphVisible(true);
-            var x = 5;
-            array.forEach(height =>{
-                var ctx = c.getContext("2d");
-                ctx.beginPath();
-                ctx.lineWidth = "2";
-                ctx.textAlign="center"; 
-                ctx.strokeStyle = "red";
-                ctx.strokeRect(x, 5, 10, height);
-                // ctx.rect(x, 5, 10, randomHeight);
-                ctx.stroke();
-                x = x+10;
-            })
-        });
-    },1000);
+        data.forEach(array =>
+            {
+                setTimeout(() => {
+                    console.log(array);
+                    var oldCanvas = algorithm.getGraphElement();
+                    oldCanvas.style.display = "none";
+                    var c = document.createElement("canvas");
+                    c.style.width = "100%";
+                    c.style.height = "84vh";
+                    c.className = "my-canvas";
+                    document.getElementById("main-content").append(c);
+                    algorithm.setGraphElement(c);
+                    algorithm.setGraphVisible(true);
+                    var x = 5;
+                    array.forEach(height =>{
+                        setTimeout(() => {
+                            var ctx = c.getContext("2d");
+                            ctx.beginPath();
+                            ctx.lineWidth = "2";
+                            ctx.textAlign="center"; 
+                            ctx.strokeStyle = "blue";
+                            // ctx.strokeRect(x, 5, 10, height);
+                            ctx.rect(x, 5, 10, height);
+                            ctx.stroke();
+                            x = x+10;
+                        }, 10*height);
+                        
+                    })
+                }, 100*array.length);
+                });
+    }
     // var ctx = canvasElement.getContext("2d");
     // ctx.clearRect(0,0,canvasElement.style.width,canvasElement.style.height);
     // ctx.beginPath();
-}
