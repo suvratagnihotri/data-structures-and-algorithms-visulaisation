@@ -183,7 +183,7 @@ function runAlgorithm(){
 
 
 window.onload = function(){
-    createGrid();
+    createGraph();
     document.getElementById("algo-button").textContent = "Run Dijkstra";
     algorithm.setAlgorithmUser((Math.random() + 1).toString(36).substring(7));
     connectToSocket();
@@ -259,31 +259,52 @@ function cellClicked(event){
 }
 
 function createGraph(){
-    var c = document.createElement("canvas");
-    c.style.width = "100%";
-    c.style.height = "84vh";
-    c.className = "my-canvas";
-    document.getElementById("main-content").append(c);
-    algorithm.setGraphElement(c);
+    const graph  = document.createElement("div");
+    graph.className = "graph-container";
+    graph.id = "graph";
+    document.getElementById("main-content").append(graph);
+    algorithm.setGraphElement(graph);
     algorithm.setGraphVisible(true);
-    var unsortedPoles = [];
-    var x = 5;
     for(var i=0; i<28; i++){
-        let randomHeight = randomNumber(10,140);
-        var ctx = c.getContext("2d");
-        ctx.beginPath();
-        ctx.lineWidth = "2";
-        ctx.textAlign="center"; 
-        ctx.strokeStyle = "red";
-        ctx.strokeRect(x, 5, 10, randomHeight);
-        // ctx.rect(x, 5, 10, randomHeight);
-        unsortedPoles.push(Number(randomHeight));
-        ctx.stroke();
-        x = x+10;
+        var randomHeight = randomNumber(10,140);
+        var bar = document.createElement("span");
+        bar.className = "bar";
+        bar.id = i+"_bar";
+        // bar.style.height = "200px";
+        // bar.style.width = "10px";
+        bar.style.backgroundColor = "blue";
+        document.getElementById("graph").append(bar);
     }
-    algorithm.setUnsortedPoles(unsortedPoles);
-    console.log(algorithm.getUnsortedPoles());
+
+
 }
+
+// function createGraph(){
+//     var c = document.createElement("canvas");
+//     c.style.width = "100%";
+//     c.style.height = "84vh";
+//     c.className = "my-canvas";
+//     document.getElementById("main-content").append(c);
+//     algorithm.setGraphElement(c);
+//     algorithm.setGraphVisible(true);
+//     var unsortedPoles = [];
+//     var x = 5;
+//     for(var i=0; i<28; i++){
+//         let randomHeight = randomNumber(10,140);
+//         var ctx = c.getContext("2d");
+//         ctx.beginPath();
+//         ctx.lineWidth = "2";
+//         ctx.textAlign="center"; 
+//         ctx.strokeStyle = "red";
+//         ctx.strokeRect(x, 5, 10, randomHeight);
+//         // ctx.rect(x, 5, 10, randomHeight);
+//         unsortedPoles.push(Number(randomHeight));
+//         ctx.stroke();
+//         x = x+10;
+//     }
+//     algorithm.setUnsortedPoles(unsortedPoles);
+//     console.log(algorithm.getUnsortedPoles());
+// }
 
 function connectToSocket(event){
     console.log(event);
