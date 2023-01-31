@@ -183,7 +183,7 @@ function runAlgorithm(){
 
 
 window.onload = function(){
-    createGraph();
+    createGrid();
     document.getElementById("algo-button").textContent = "Run Dijkstra";
     algorithm.setAlgorithmUser((Math.random() + 1).toString(36).substring(7));
     connectToSocket();
@@ -265,46 +265,19 @@ function createGraph(){
     document.getElementById("main-content").append(graph);
     algorithm.setGraphElement(graph);
     algorithm.setGraphVisible(true);
+    var unsortedPoles = [];
     for(var i=0; i<28; i++){
-        var randomHeight = randomNumber(10,140);
+        var randomHeight = randomNumber(10,300);
         var bar = document.createElement("span");
         bar.className = "bar";
         bar.id = i+"_bar";
-        // bar.style.height = "200px";
-        // bar.style.width = "10px";
+        bar.style.paddingBottom = randomHeight+"px";
         bar.style.backgroundColor = "blue";
         document.getElementById("graph").append(bar);
+        unsortedPoles.push(Number(randomHeight));
     }
-
-
+    algorithm.setUnsortedPoles(unsortedPoles);
 }
-
-// function createGraph(){
-//     var c = document.createElement("canvas");
-//     c.style.width = "100%";
-//     c.style.height = "84vh";
-//     c.className = "my-canvas";
-//     document.getElementById("main-content").append(c);
-//     algorithm.setGraphElement(c);
-//     algorithm.setGraphVisible(true);
-//     var unsortedPoles = [];
-//     var x = 5;
-//     for(var i=0; i<28; i++){
-//         let randomHeight = randomNumber(10,140);
-//         var ctx = c.getContext("2d");
-//         ctx.beginPath();
-//         ctx.lineWidth = "2";
-//         ctx.textAlign="center"; 
-//         ctx.strokeStyle = "red";
-//         ctx.strokeRect(x, 5, 10, randomHeight);
-//         // ctx.rect(x, 5, 10, randomHeight);
-//         unsortedPoles.push(Number(randomHeight));
-//         ctx.stroke();
-//         x = x+10;
-//     }
-//     algorithm.setUnsortedPoles(unsortedPoles);
-//     console.log(algorithm.getUnsortedPoles());
-// }
 
 function connectToSocket(event){
     console.log(event);
@@ -406,35 +379,18 @@ function onSortingResultReceived(payload){
     console.log(sortedArrayData);
     var data = JSON.parse(sortedArrayData);
         data.forEach(array =>
-            {
-                setTimeout(() => {
-                    console.log(array);
-                    var oldCanvas = algorithm.getGraphElement();
-                    oldCanvas.style.display = "none";
-                    var c = document.createElement("canvas");
-                    c.style.width = "100%";
-                    c.style.height = "84vh";
-                    c.className = "my-canvas";
-                    document.getElementById("main-content").append(c);
-                    algorithm.setGraphElement(c);
-                    algorithm.setGraphVisible(true);
-                    var x = 5;
-                    array.forEach(height =>{
-                        setTimeout(() => {
-                            var ctx = c.getContext("2d");
-                            ctx.beginPath();
-                            ctx.lineWidth = "2";
-                            ctx.textAlign="center"; 
-                            ctx.strokeStyle = "blue";
-                            // ctx.strokeRect(x, 5, 10, height);
-                            ctx.rect(x, 5, 10, height);
-                            ctx.stroke();
-                            x = x+10;
-                        }, 10*height);
-                        
-                    })
-                }, 100*array.length);
+        {
+            setTimeout(()=>{
+                var i = 0;
+                array.forEach(element => {
+                    setTimeout(()=>{
+                        console.log(element);
+                            document.getElementById(i+"_bar").style.paddingBottom = element+"px";
+                            i = i+1;
+                    },10*element); 
                 });
+            },100);
+        });
     }
     // var ctx = canvasElement.getContext("2d");
     // ctx.clearRect(0,0,canvasElement.style.width,canvasElement.style.height);
